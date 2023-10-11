@@ -10,11 +10,12 @@ def phase_curve(phases, lon, lat, intensity):
     Parameters
     ----------
     phases (array(P)):
-        List of phases at which the phasecurve should be evaluated
+        List of phases at which the phasecurve should be evaluated.
+        Phases are from 0 to 1, where 0.5 is the night side and 0.0 is the dayside.
     lon (array(M1,M2) or array(M1*M2)):
-        Longitude coordinate values. If input is 1D we assume that it has been flattened.
+        Longitude coordinate values in degrees. If input is 1D we assume that it has been flattened.
     lat (array(M1,M2) or array(M1*M2)):
-        Longitude coordinate values. If input is 1D we assume that it has been flattened.
+        Latitude coordinate values in degrees. If input is 1D we assume that it has been flattened.
     mus (array(D)):
         List of mus matching the mus of the calculated intensity
     intensity (array(M1,M2,D,N) or array(M1*M2,D,N)):
@@ -29,6 +30,8 @@ def phase_curve(phases, lon, lat, intensity):
     lon = np.array(lon)
     lat = np.array(lat)
     intensity = np.array(intensity)
+
+    assert phases.min() >= 0.0 and phases.max() <= 1.0, "phases are from 0 to 1, where 0.5 is the night side and 0.0 is the dayside"
 
     # Format input data:
     if len(lon.shape) == 2:
@@ -65,6 +68,8 @@ def phase_curve(phases, lon, lat, intensity):
     # Carry out the phasecurve calculation:
     phase_curve = np.array([calc_phase_curve(phase, mu, mu_rad_bas) for phase in phases])
 
+    assert (phase_curve >= 0.0).all(), 'we have some negative values here! Use more gridpoints'
+
     return phase_curve
 
 
@@ -75,7 +80,8 @@ def calc_phase_curve(phase, mus, mu_rad_bas):
     Parameters
     ----------
     phase (float):
-        Phase at which the phase curve should be calculated
+        Phase at which the phase curve should be calculated.
+        Phases are from 0 to 1, where 0.5 is the night side and 0.0 is the dayside.
     mus (1D list):
         array of the mu values for which the intensity has been calculated
     mu_rad_bas (scipy.interpolate.RBFInterpolator):
